@@ -56,7 +56,15 @@ int main() {
 	client_addr_len = sizeof(client_addr);
 	
 	// Accept an incoming connection
-	accept(server_fd, (struct sockaddr *) &client_addr, &client_addr_len); // accept blocks until a connection is present. Upon success, it returns a new socket file descriptor for the accepted connection (though it is not stored or used here).
+	// accept blocks until a connection is present. Upon success, it returns a new socket file descriptor for the accepted connection.
+	// Define a client file descriptor to store information from accept
+	int client_fd = accept(server_fd, (struct sockaddr*)&client_addr, &client_addr_len);
+	
+	// Define a PING response
+	char* ping_response = "+PONG\r\n";
+	// Send the response upon PING
+	send(client_fd, ping_response, strlen(ping_response), 0);
+
 	printf("Client connected\n");
 	
 	// Close the server socket file descriptor and return 0 to indicate successful execution.
