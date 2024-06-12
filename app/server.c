@@ -7,6 +7,10 @@
 #include <errno.h>			// error number macros
 #include <unistd.h>			// POSIX OS API
 
+const size_t RECV_BUFFER_SIZE = 256;
+
+static const char PING_RESPONSE[] = "+PONG\r\n";
+
 int main() {
 	// Disable output buffering - all output is immediately flushed and visible for debugging
 	setbuf(stdout, NULL);
@@ -60,15 +64,22 @@ int main() {
 	// Define a client file descriptor to store information from accept
 	int client_fd = accept(server_fd, (struct sockaddr*)&client_addr, &client_addr_len);
 	
-	// Define a PING response
-	char* ping_response = "+PONG\r\n";
-	// Send the response upon PING
-	send(client_fd, ping_response, strlen(ping_response), 0);
+	if (client_fd == -1)
+	{
+		fprintf(stderr, "%s", "Connection error\n");
+	}
 
 	printf("Client connected\n");
+
+	char buffer[RECV_BUFFER_SIZE];
+	while (recv(client_fd, buffer, RECV_BUFFER_SIZE, 0) != 0)
+	{
+		send(client_fd, &PING_RESPONSE, 7, 0); // 7 is hardcoded for now, from "+PONG\r\n"
+	}
 	
 	// Close the server socket file descriptor and return 0 to indicate successful execution.
 	close(server_fd);
+	close(client_fd);
 
 	return 0;
 }
